@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <sys/stat.h>
+#include <stdlib.h>
+#include <string.h>
+#include "log_processor.h"
+
+
+Entry *ip_table[HASH_SIZE];
+Entry *url_table[HASH_SIZE];
 
 long get_file_size(const char *filename) {
     struct stat st;
@@ -8,6 +15,88 @@ long get_file_size(const char *filename) {
         return st.st_size;
     }
     return -1;
+}
+
+void init_table(Entry *table[]) {
+    for (int i = 0; i < HASH_SIZE; i++) {
+        table[i] = NULL;
+    }
+}
+
+unsigned int hash(const char *str) {
+    unsigned int h = 0;
+
+    while (*str) {
+        h = (h * 31) + *str;
+        str++;
+    }
+
+    return h % HASH_SIZE;
+}
+
+void insert_or_increment(Entry *table[], const char *key) {
+
+    unsigned int index = hash(key);
+
+    Entry *current = table[index];
+
+    while (current) {
+
+        if (strcmp(current->key, key) == 0) {
+            current->count++;
+            return;
+        }
+
+        current = current->next;
+    }
+
+    Entry *new_entry = malloc(sizeof(Entry));
+
+    strcpy(new_entry->key, key);
+    new_entry->count = 1;
+    new_entry->next = table[index];
+
+    table[index] = new_entry;
+}
+
+int count_unique(Entry *table[]) {
+
+    int total = 0;
+
+    for (int i = 0; i < HASH_SIZE; i++) {
+
+        Entry *current = table[i];
+
+        while (current) {
+            total++;
+            current = current->next;
+        }
+    }
+
+    return total;
+}
+
+void most_visited_url(Entry *table[]) {
+
+    char max_url[256] = "";
+    int max_count = 0;
+
+    for (int i = 0; i < HASH_SIZE; i++) {
+
+        Entry *current = table[i];
+
+        while (current) {
+
+            if (current->count > max_count) {
+                max_count = current->count;
+                strcpy(max_url, current->key);
+            }
+
+            current = current->next;
+        }
+    }
+
+    printf("URL Más Visitada: %s (%d veces)\n", max_url, max_count);
 }
 
 void proccesFile(const char *filename){
@@ -21,30 +110,35 @@ void proccesFile(const char *filename){
 
     char line[4096];
     int error_count = 0;
-    int lines_reas = 0;
+
+    init_table(ip_table);
+    init_table(url_table);
 
     while (fgets(line, sizeof(line), file)) {
 
-        char ip[64];
-        char method[16];
-        char url[256];
-        char ts[64];
+    char ip[64]     = {0};
+    char method[16] = {0};
+    char url[256]   = {0};
+    char timestamp[64]     = {0};
+    int  status     = 0;
 
-        int status;
+    int parsed = sscanf(line,
+        "%255s %*s %*s [%63[^]]] \"%15s %255[^\"]\" %d",
+        ip, timestamp, method, url, &status);
 
-        sscanf(line,
-            "%255s %*s %*s [%63[^]]] \"%15s %255[^\"]\" %d",
-            ip, ts, method, url, &status);
+    if (parsed != 5) continue;
 
-        printf("IP:%s URL:%s STATUS:%d\n", ip, url, status);
-        lines_reas++;
-        if (status >= 400 && status <= 599) {
-            error_count++;
-        }
+    if (status >= 400 && status <= 599) {
+        error_count++;
     }
+
+    insert_or_increment(ip_table, ip);
+    insert_or_increment(url_table, url);
+}
 
     fclose(file);
 
-    printf("Lineas leidas: %d\n", lines_reas);
+    printf("IPs Únicas Totales: %d\n", count_unique(ip_table));
+    most_visited_url(url_table);
     printf("Errores HTTP: %d\n", error_count);
 }
