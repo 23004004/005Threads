@@ -116,25 +116,25 @@ void proccesFile(const char *filename){
 
     while (fgets(line, sizeof(line), file)) {
 
-    char ip[64]     = {0};
-    char method[16] = {0};
-    char url[256]   = {0};
-    char timestamp[64]     = {0};
-    int  status     = 0;
+        char ip[64]     = {0};
+        char method[16] = {0};
+        char url[256]   = {0};
+        char timestamp[64]     = {0};
+        int  status     = 0;
 
-    int parsed = sscanf(line,
-        "%255s %*s %*s [%63[^]]] \"%15s %255[^\"]\" %d",
-        ip, timestamp, method, url, &status);
+        int parsed = sscanf(line,
+            "%255s %*s %*s [%63[^]]] \"%15s %255[^\"]\" %d",
+            ip, timestamp, method, url, &status);
 
-    if (parsed != 5) continue;
+        if (parsed != 5) continue;
 
-    if (status >= 400 && status <= 599) {
-        error_count++;
+        if (status >= 400 && status <= 599) {
+            error_count++;
+        }
+
+        insert_or_increment(ip_table, ip);
+        insert_or_increment(url_table, url);
     }
-
-    insert_or_increment(ip_table, ip);
-    insert_or_increment(url_table, url);
-}
 
     fclose(file);
 
