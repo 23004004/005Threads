@@ -7,11 +7,7 @@
 void* createThread(void *arg);
 
 int main(){
-
     pthread_t hilo;
-
-    pthread_create(&hilo, NULL, createThread, NULL);
-
     const char *filename = "access.log";
 
     long file_size = get_file_size(filename);
@@ -20,12 +16,15 @@ int main(){
         return 1;
     }
 
-    proccesFile(filename);
+    pthread_create(&hilo, NULL, createThread, (void*)filename);
+
+
     pthread_join(hilo, NULL);
     return 0;
 }
 
 void* createThread(void *arg){
-    printf("hola desde el hilo\n");
+    const char *filename = (const char*)arg;
+    proccesFile(filename);
     return NULL;
 }
