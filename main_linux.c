@@ -35,6 +35,24 @@ int main(){
         pthread_join(hilos[i], NULL);
     }
 
+    Entry *global_ip[HASH_SIZE];
+    Entry *global_url[HASH_SIZE];
+    int    total_errors = 0;
+
+    init_table(global_ip);
+    init_table(global_url);
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        merge_table(global_ip,  args[i].ip_table);
+        merge_table(global_url, args[i].url_table);
+        total_errors += args[i].error_count;
+    }
+
+    printf("\n--- RESULT ---\n");
+    printf("Total Unique IPs: %d\n", count_unique(global_ip));
+    most_visited_url(global_url);
+    printf("HTTP Errors: %d\n", total_errors);
+
     return 0;
 }
 

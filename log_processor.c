@@ -140,8 +140,16 @@ void proccesFile(ThreadArgs *args){
     }
 
     fclose(file);
+}
 
-    printf("IPs Únicas Totales: %d\n", count_unique(args-> ip_table));
-    most_visited_url(args->url_table);
-    printf("Errores HTTP: %d\n", args->error_count);
+void merge_table(Entry *dest[], Entry *src[]) {
+    for (int i = 0; i < HASH_SIZE; i++) {
+        Entry *current = src[i];
+        while (current) {
+            for (int j = 0; j < current->count; j++) {
+                insert_or_increment(dest, current->key);
+            }
+            current = current->next;
+        }
+    }
 }

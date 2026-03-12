@@ -23,4 +23,10 @@ typedef struct {
 
 long get_file_size(const char *filename);
 void proccesFile(ThreadArgs *args);
+
+void most_visited_url(Entry *table[]);
+void merge_table(Entry *dest[], Entry *src[]);
+int count_unique(Entry *table[]);
+void init_table(Entry *table[]);
+
 #endif
