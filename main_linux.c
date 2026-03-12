@@ -7,10 +7,10 @@
 void* createThread(void *arg);
 
 int main(){
-    pthread_t hilo;
+    pthread_t hilos[NUM_THREADS];
+    ThreadArgs args[NUM_THREADS];
+
     const char *filename = "access.log";
-    long start_byte = 0;
-    long end_byte = 0;
 
     long file_size = get_file_size(filename);
     if (file_size <= 0) {
@@ -18,17 +18,23 @@ int main(){
         return 1;
     }
 
-    end_byte = file_size / NUM_THREADS;
-    ThreadArgs *new_thread = malloc(sizeof(ThreadArgs));
 
-    new_thread -> filename = filename;
-    new_thread -> start_byte = start_byte;
-    new_thread -> end_byte = end_byte;
+    for (size_t i = 0; i < NUM_THREADS; i++)
+    {
+        args[i].filename = filename;
+        args[i].start_byte = i * (file_size / NUM_THREADS);
+        args[i].end_byte   = (i == NUM_THREADS - 1)
+                                ? file_size
+                                : (i + 1) * (file_size / NUM_THREADS);
 
-    pthread_create(&hilo, NULL, createThread, (void*)new_thread);
+        pthread_create(&hilos[i], NULL, createThread, &args[i]);
+    }
 
 
-    pthread_join(hilo, NULL);
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(hilos[i], NULL);
+    }
+
     return 0;
 }
 
