@@ -40,9 +40,6 @@ int main(){
 
 void* createThread(void *arg){
     ThreadArgs *new_thread = (ThreadArgs*)arg;
-
-    printf("Leyendo desde byte %ld hasta byte %ld\n", new_thread->start_byte, new_thread->end_byte);
-
-    proccesFile(new_thread->filename, new_thread->start_byte, new_thread->end_byte);    
+    proccesFile(new_thread);    
     return NULL;
 }

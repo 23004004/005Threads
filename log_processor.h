@@ -16,8 +16,11 @@ typedef struct {
     const char *filename;
     long start_byte;
     long end_byte;
+    Entry *ip_table[HASH_SIZE];
+    Entry *url_table[HASH_SIZE];
+    int error_count;
 } ThreadArgs;
 
 long get_file_size(const char *filename);
-void proccesFile(const char *filename, long start_byte, long end_byte);
+void proccesFile(ThreadArgs *args);
 #endif

@@ -5,10 +5,6 @@
 #include <string.h>
 #include "log_processor.h"
 
-
-Entry *ip_table[HASH_SIZE];
-Entry *url_table[HASH_SIZE];
-
 long get_file_size(const char *filename) {
     struct stat st;
     if (stat(filename, &st) == 0) {
@@ -99,29 +95,29 @@ void most_visited_url(Entry *table[]) {
     printf("URL Más Visitada: %s (%d veces)\n", max_url, max_count);
 }
 
-void proccesFile(const char *filename, long start_byte, long end_byte){
+void proccesFile(ThreadArgs *args){
 
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(args-> filename, "r");
     if (!file) {
         fprintf(stderr, "No se pudo abrir '%s'\n",
-                filename);
+                args-> filename);
         return;
     }
 
-    fseek(file, start_byte, SEEK_SET);
-    if (start_byte > 0) {
+    fseek(file, args-> start_byte, SEEK_SET);
+    if (args-> start_byte > 0) {
         char skip[4096];
         fgets(skip, sizeof(skip), file);
     }
 
 
     char line[4096];
-    int error_count = 0;
+    args->error_count = 0;
 
-    init_table(ip_table);
-    init_table(url_table);
+    init_table(args-> ip_table);
+    init_table(args-> url_table);
 
-    while (ftell(file) < end_byte && fgets(line, sizeof(line), file)) {
+    while (ftell(file) < args-> end_byte && fgets(line, sizeof(line), file)) {
 
         char ip[64]     = {0};
         char method[16] = {0};
@@ -136,16 +132,16 @@ void proccesFile(const char *filename, long start_byte, long end_byte){
         if (parsed != 5) continue;
 
         if (status >= 400 && status <= 599) {
-            error_count++;
+            args->error_count++;;
         }
 
-        insert_or_increment(ip_table, ip);
-        insert_or_increment(url_table, url);
+        insert_or_increment(args-> ip_table, ip);
+        insert_or_increment(args-> url_table, url);
     }
 
     fclose(file);
 
-    printf("IPs Únicas Totales: %d\n", count_unique(ip_table));
-    most_visited_url(url_table);
-    printf("Errores HTTP: %d\n", error_count);
+    printf("IPs Únicas Totales: %d\n", count_unique(args-> ip_table));
+    most_visited_url(args->url_table);
+    printf("Errores HTTP: %d\n", args->error_count);
 }
