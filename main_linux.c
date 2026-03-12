@@ -37,6 +37,6 @@ void* createThread(void *arg){
 
     printf("Leyendo desde byte %ld hasta byte %ld\n", new_thread->start_byte, new_thread->end_byte);
 
-    //proccesFile(new_thread -> filename);
+    proccesFile(new_thread->filename, new_thread->start_byte, new_thread->end_byte);    
     return NULL;
 }

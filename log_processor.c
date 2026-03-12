@@ -99,7 +99,7 @@ void most_visited_url(Entry *table[]) {
     printf("URL Más Visitada: %s (%d veces)\n", max_url, max_count);
 }
 
-void proccesFile(const char *filename){
+void proccesFile(const char *filename, long start_byte, long end_byte){
 
     FILE *file = fopen(filename, "r");
     if (!file) {
@@ -108,13 +108,20 @@ void proccesFile(const char *filename){
         return;
     }
 
+    fseek(file, start_byte, SEEK_SET);
+    if (start_byte > 0) {
+        char skip[4096];
+        fgets(skip, sizeof(skip), file);
+    }
+
+
     char line[4096];
     int error_count = 0;
 
     init_table(ip_table);
     init_table(url_table);
 
-    while (fgets(line, sizeof(line), file)) {
+    while (ftell(file) < end_byte && fgets(line, sizeof(line), file)) {
 
         char ip[64]     = {0};
         char method[16] = {0};
