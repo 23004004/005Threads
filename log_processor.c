@@ -92,7 +92,7 @@ void most_visited_url(Entry *table[]) {
         }
     }
 
-    printf("URL Más Visitada: %s (%d veces)\n", max_url, max_count);
+    printf("Most Visited URL: %s (%d times)\n", max_url, max_count);
 }
 
 void proccesFile(ThreadArgs *args){
